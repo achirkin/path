@@ -1,7 +1,6 @@
 {-# LANGUAGE CPP                #-}
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE TemplateHaskell    #-}
 
 -- | Internal types and functions.
 
@@ -19,7 +18,7 @@ import GHC.Generics (Generic)
 import Data.Data
 import Data.Hashable
 import Data.List
-import Language.Haskell.TH.Syntax (Exp(..), Lift(..), Lit(..))
+import Language.Haskell.TH.Syntax (Exp(..), Lift(..), Lit(..), lookupValueName)
 import qualified System.FilePath as FilePath
 
 -- | Path of some base and type.
@@ -109,4 +108,6 @@ hasParentDir filepath' =
             x   -> map (\y -> if x == y then '/' else y) filepath'
 
 instance Lift (Path a b) where
-  lift (Path str) = [|Path $(return (LitE (StringL str)))|]
+  lift (Path str) = do
+    Just p <- lookupValueName "Path"
+    return $ VarE p `AppE` (LitE (StringL str))
